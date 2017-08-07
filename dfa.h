@@ -13,8 +13,8 @@ public:
 	DFA_Status():IsFinal(false){}
 	DFA_Status(Status* status){ add_nfa(status); } //以单个NFA状态构造DFA状态
 	set<Status*> status_set; //对应NFA的状态集合
-	void add_nfa(Status* status){ status_set.insert(status); if (status->IsFinal)IsFinal = true; } //加入NFA状态
-	bool IsFinal;
+	void add_nfa(Status* status) { status_set.insert(status); if (status->IsFinal)IsFinal = true; } //加入NFA状态
+	bool IsFinal=false;
 };
 class DFA_Edge
 {

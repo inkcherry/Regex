@@ -2,9 +2,9 @@
 #include <queue>
 #include<algorithm>
 using namespace std;
-NFA::NFA(Node* Tree)   //nfa树    
+NFA::NFA(Node* Tree)   //nfa树
 {
-	auto status=gen_status(Tree);   
+	auto status=gen_status(Tree);
 	start_status = status.first;
 	end_status = status.second;
 
@@ -19,7 +19,7 @@ NFA::~NFA()
 pair<Status*, Status*> NFA::gen_status(Node* node)       //NFA 状态分析函数
 {
 	pair<Status*, Status*> status;                      //一个status的状态集
-	
+
 		switch (node->type)                           //对node进行选择
 		{
 		case Node::CHAR:
@@ -43,7 +43,7 @@ pair<Status*, Status*> NFA::gen_status(Node* node)       //NFA 状态分析函数
 		default:
 			break;
 		}
-	
+
 	return status;
 }
 pair<Status*, Status*> NFA::gen_range(Node* node)    //范围
@@ -58,7 +58,7 @@ pair<Status*, Status*> NFA::gen_range(Node* node)    //范围
 pair<Status*, Status*> NFA::gen_repeat_0(Node* node)   //*型重复
 {
 	Repeat_Node* repeat_node = static_cast<Repeat_Node*>(node);     //声明一个node型 用基类的指针node 初始化repeat_node
-	Status* s_start = new Status(true);                      
+	Status* s_start = new Status(true);
 	Status* s_end = s_start;                                      //这两部表示 起始状态和终止状态重复
 	Status* _s_start = nullptr;
 	Status* _s_end = nullptr;
@@ -88,12 +88,12 @@ pair<Status*, Status*> NFA::gen_and(Node* node)             //处理and
 	And_Node* and_node = static_cast<And_Node*>(node);
 	Status* s_start = nullptr;
 	Status* s_end = nullptr;
-	for (auto s : *(and_node->pool))   // 遍历这个  pool  
+	for (auto s : *(and_node->pool))   // 遍历这个  pool
 	{
 		auto tmp = gen_status(s);     //读出每个node
 		if (!s_end)                 //如果没有结束
 		{
-			s_start=tmp.first;     
+			s_start=tmp.first;
 			s_end = tmp.second;
 			continue;
 		}
@@ -104,17 +104,19 @@ pair<Status*, Status*> NFA::gen_and(Node* node)             //处理and
 	s_end->IsFinal= true;               //然后给最后一个为true
 	return make_pair(s_start, s_end);
 }
-pair<Status*, Status*> NFA::gen_or(Node* node)    //处理或   
+pair<Status*, Status*> NFA::gen_or(Node* node)    //处理或
 {
 	Or_Node* or_node = static_cast<Or_Node*>(node);    //申明一个ornode 对象
-	Status* s_start = new Status;      
+	Status* s_start = new Status;
 	Status* s_end = new Status(true);
 	for (auto s : *(or_node)->pool)
 	{
 		auto tmp = gen_status(s);
 		make_edge(s_start, tmp.first);   //构建开始的那个E边
-		make_edge(tmp.second, s_end);     //结束的那个E边
+	    make_edge(tmp.second, s_end);     //结束的那个E边
+		tmp.second->IsFinal = true;   //这个地方  去E边时 连接的是or结束边的start状态 make_edge重置为false了
 	}
+
 	return make_pair(s_start, s_end);
 }
 pair<Status*, Status*> NFA::gen_char(Node* node)     //char型
@@ -126,12 +128,12 @@ pair<Status*, Status*> NFA::gen_char(Node* node)     //char型
 	return make_pair(s_start,s_end);
 }
 
-Edge* NFA::make_edge(Status* status1, _MatchContent content, Status* status2,bool isAdd) 
+Edge* NFA::make_edge(Status* status1, _MatchContent content, Status* status2,bool isAdd)
 {
-	if (isAdd&&content.left!=-1&&status1->IsFinal)
-		status1->IsFinal = false;                                           //如果他是前边终状态 给他废掉
-	auto edge = new Edge(status1, content, status2);                      
-	 
+	if (isAdd&&status1->IsFinal)
+		status1->IsFinal = false;                                           //设置的新边
+	auto edge = new Edge(status1, content, status2);
+
 	if (isAdd)                                   //如果是进行合并   如果这两个状态没有存在集合中 那么加入到集合中
 	{
 		if (!_isStatusExist(status1))
@@ -143,7 +145,7 @@ Edge* NFA::make_edge(Status* status1, _MatchContent content, Status* status2,boo
 	return edge;                                       //返回edge
 }
 
-Edge* NFA::make_edge(Status* status1, Status* status2,bool isAdd)    //如果不需要match 就自动过
+Edge* NFA::make_edge(Status* status1, Status* status2,bool isAdd)    //如果是添加的E边 就自动过
 {
 	return make_edge(status1, _MatchContent(-1, -1), status2,isAdd);
 }
@@ -166,7 +168,7 @@ void NFA::E2NFA() //NFA转化为DFA （这里是将E边删除）
 		}
 		if (exist_valid)                //然后把他放到valid_status集合中去
 			valid_status.push_back(status);
-	} //获得有效状态 这样获得所有有效边的状态   
+	} //获得有效状态 这样获得所有有效边的状态
 	vector<Edge*> edges_add;
 	vector<Edge*> E_edges; //需要被设置为E的边
 	for (auto status : valid_status) //寻找有效状态的E-closure,并将其延伸的有效边复制到有效状态上
@@ -174,10 +176,10 @@ void NFA::E2NFA() //NFA转化为DFA （这里是将E边删除）
 		vector<Status*> closure_status;
 		queue<Status*> uncomplete_status;
 		uncomplete_status.push(status);
-		while (!uncomplete_status.empty())        
+		while (!uncomplete_status.empty())
 		{
 			Status* head = uncomplete_status.front();     //弹出队首元素 head
-			uncomplete_status.pop();                      
+			uncomplete_status.pop();
 			for (auto edge : head->OutEdges)           //遍历head
 			{
 				if (_isEedge(edge)) //以该状态为起始的E边
