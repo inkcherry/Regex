@@ -58,6 +58,7 @@ void DFA::constructDFA(NFA& nfa)
 		}
 	}
 	AllStatus.insert(AllStatus.end(), D.begin(), D.end());
+
 }
 
 DFA_Edge* make_edge(DFA_Status* b, _MatchContent content, DFA_Status* e)

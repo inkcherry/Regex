@@ -2,14 +2,14 @@
 #include <queue>
 #include<algorithm>
 using namespace std;
-NFA::NFA(Node* Tree)   //nfaÊ÷
+NFA::NFA(Node* Tree)   //
 {
 	auto status=gen_status(Tree);
 	start_status = status.first;
 	end_status = status.second;
-
+	end_status->IsFinal = true;  //×îÖÕ×´Ì¬Îªtrue
 	E2NFA();
-	start_status->IsFinal = false;  //ÕûÌåµÄ¿ªÊ¼×´Ì¬²»ÄÜ×÷Îª½áÊø×´Ì¬£¬·ÀÖ¹½ÓÊÕÈÎÒâ×Ö·ûÊ¹ÆäÆ¥Åä½áÊø
+    //ÕûÌåµÄ¿ªÊ¼×´Ì¬²»ÄÜ×÷Îª½áÊø×´Ì¬£¬·ÀÖ¹½ÓÊÕÈÎÒâ×Ö·ûÊ¹ÆäÆ¥Åä½áÊø
 	 //find_end_status();
 }
 NFA::~NFA()
@@ -55,14 +55,14 @@ pair<Status*, Status*> NFA::gen_range(Node* node)    //·¶Î§
 
 	return make_pair(s_start, s_end);         //Á¬½ÓÉÏÕâÁ½¸ö×´Ì¬
 }
-pair<Status*, Status*> NFA::gen_repeat_0(Node* node)   //*ĞÍÖØ¸´
+pair<Status*, Status*> NFA::gen_repeat_0(Node* node)   //*ĞÍÖØ¸´ 0´ÎÒÔÉÏÖØ¸´
 {
 	Repeat_Node* repeat_node = static_cast<Repeat_Node*>(node);     //ÉùÃ÷Ò»¸önodeĞÍ ÓÃ»ùÀàµÄÖ¸Õënode ³õÊ¼»¯repeat_node
-	Status* s_start = new Status(true);
+	Status* s_start = new Status(true);                //ÕâÊÇÖØ¸´½ÚµãµÄ×îÖÕ×´Ì¬£¬Ò²ÊÇÁ¬½ÓÁ½ÌõE±ßµÄ×´Ì¬
 	Status* s_end = s_start;                                      //ÕâÁ½²¿±íÊ¾ ÆğÊ¼×´Ì¬ºÍÖÕÖ¹×´Ì¬ÖØ¸´
 	Status* _s_start = nullptr;
 	Status* _s_end = nullptr;
-	pair<Status*, Status*> s_child = gen_status(repeat_node->node);   //repeat_nodeÖĞÓĞÒ»¸önodeÖØ¸´±äÁ¿ ÉÏ±ß±»³õÊ¼»¯ÁË
+	pair<Status*, Status*> s_child = gen_status(repeat_node->node);   //×ÓÍ¼¿ªÊ¼ ½áÊø
 	_s_start = s_child.first;
 	_s_end = s_child.second;
 	make_edge(s_start, _s_start);
@@ -71,7 +71,7 @@ pair<Status*, Status*> NFA::gen_repeat_0(Node* node)   //*ĞÍÖØ¸´
 	return make_pair(s_start, s_end);
 
 }
-pair<Status*, Status*> NFA::gen_repeat_1(Node* node)   //+ĞÍÖØ¸´
+pair<Status*, Status*> NFA::gen_repeat_1(Node* node)   //¿ÉÑ¡+
 {
 	Repeat_Node* repeat_node = static_cast<Repeat_Node*>(node);   //ÉùÃ÷Ò»¸öÖØ¸´¶ÔÏó
 	Status* s_start = nullptr;
@@ -80,7 +80,7 @@ pair<Status*, Status*> NFA::gen_repeat_1(Node* node)   //+ĞÍÖØ¸´
 	make_edge(s_child.second, s_child.first);
 	s_start = s_child.first;
 	s_end = s_child.second;
-	s_end->IsFinal = true;                              //×÷ÎªÒ»´ÎÒÔÉÏµÄÅĞ¶Ï±êÖ¾
+/*	s_end->IsFinal = true;   */                        
 	return make_pair(s_start, s_end);
 }
 pair<Status*, Status*> NFA::gen_and(Node* node)             //´¦Àíand
@@ -98,10 +98,10 @@ pair<Status*, Status*> NFA::gen_and(Node* node)             //´¦Àíand
 			continue;
 		}
 		s_end->IsFinal = false;
-		make_edge(s_end,tmp.first);  //¾Í°ÑËûÃÇÁ¬½ÓÆğÀ´
+		make_edge(s_end,tmp.first);  //Á¬½ÓE±ß
 		s_end = tmp.second;
 	}
-	s_end->IsFinal= true;               //È»ºó¸ø×îºóÒ»¸öÎªtrue
+/*	s_end->IsFinal= true;       */        //È»ºó¸ø×îºóÒ»¸öÎªtrue Ò²¾ÍÊÇÕû¸öandµÄ×îÖÕ×´Ì¬
 	return make_pair(s_start, s_end);
 }
 pair<Status*, Status*> NFA::gen_or(Node* node)    //´¦Àí»ò
@@ -114,9 +114,10 @@ pair<Status*, Status*> NFA::gen_or(Node* node)    //´¦Àí»ò
 		auto tmp = gen_status(s);
 		make_edge(s_start, tmp.first);   //¹¹½¨¿ªÊ¼µÄÄÇ¸öE±ß
 	    make_edge(tmp.second, s_end);     //½áÊøµÄÄÇ¸öE±ß
-		tmp.second->IsFinal = true;   //Õâ¸öµØ·½  È¥E±ßÊ± Á¬½ÓµÄÊÇor½áÊø±ßµÄstart×´Ì¬ make_edgeÖØÖÃÎªfalseÁË
+		//tmp.second->IsFinal = true;   //Õâ¸öµØ·½  È¥E±ßÊ± Á¬½ÓµÄÊÇor½áÊø±ßµÄstart×´Ì¬ make_edgeÖØÖÃÎªfalseÁË
+		//s_end->IsFinal = true;       //ÕâÀïÉèÖÃ×îÖÕµÄ×´Ì¬ÊÇtrue  =>true
 	}
-
+	 
 	return make_pair(s_start, s_end);
 }
 pair<Status*, Status*> NFA::gen_char(Node* node)     //charĞÍ
@@ -131,7 +132,7 @@ pair<Status*, Status*> NFA::gen_char(Node* node)     //charĞÍ
 Edge* NFA::make_edge(Status* status1, _MatchContent content, Status* status2,bool isAdd)
 {
 	if (isAdd&&status1->IsFinal)
-		status1->IsFinal = false;                                           //ÉèÖÃµÄĞÂ±ß
+		status1->IsFinal = false;                                           //ÉèÖÃµÄĞÂ±ß ËùÓĞµÄĞÂ±ß¾ùÉèÖÃÎªfalse
 	auto edge = new Edge(status1, content, status2);
 
 	if (isAdd)                                   //Èç¹ûÊÇ½øĞĞºÏ²¢   Èç¹ûÕâÁ½¸ö×´Ì¬Ã»ÓĞ´æÔÚ¼¯ºÏÖĞ ÄÇÃ´¼ÓÈëµ½¼¯ºÏÖĞ
@@ -151,7 +152,7 @@ Edge* NFA::make_edge(Status* status1, Status* status2,bool isAdd)    //Èç¹ûÊÇÌí¼
 }
 
 
-void NFA::E2NFA() //NFA×ª»¯ÎªDFA £¨ÕâÀïÊÇ½«E±ßÉ¾³ı£©
+void NFA::E2NFA() //ENFA×ª»¯ÎªNFA £¨ÕâÀïÊÇ½«E±ßÉ¾³ı£©
 {
 	vector<Status*> valid_status;
 	valid_status.push_back(start_status); //startÎªÓĞĞ§×´Ì¬
@@ -171,24 +172,28 @@ void NFA::E2NFA() //NFA×ª»¯ÎªDFA £¨ÕâÀïÊÇ½«E±ßÉ¾³ı£©
 	} //»ñµÃÓĞĞ§×´Ì¬ ÕâÑù»ñµÃËùÓĞÓĞĞ§±ßµÄ×´Ì¬
 	vector<Edge*> edges_add;
 	vector<Edge*> E_edges; //ĞèÒª±»ÉèÖÃÎªEµÄ±ß
+
 	for (auto status : valid_status) //Ñ°ÕÒÓĞĞ§×´Ì¬µÄE-closure,²¢½«ÆäÑÓÉìµÄÓĞĞ§±ß¸´ÖÆµ½ÓĞĞ§×´Ì¬ÉÏ
 	{
 		vector<Status*> closure_status;
 		queue<Status*> uncomplete_status;
-		uncomplete_status.push(status);
-		while (!uncomplete_status.empty())
+		uncomplete_status.push(status);       
+		while (!uncomplete_status.empty())  
 		{
-			Status* head = uncomplete_status.front();     //µ¯³ö¶ÓÊ×ÔªËØ head
+			Status* head = uncomplete_status.front();     //µ¯³ö¶ÓÊ×Ôª×´Ì¬
 			uncomplete_status.pop();
-			for (auto edge : head->OutEdges)           //±éÀúhead
+			for (auto edge : head->OutEdges)           //ÕÒ¸Ä×´Ì¬³ö±ß
 			{
 				if (_isEedge(edge)) //ÒÔ¸Ã×´Ì¬ÎªÆğÊ¼µÄE±ß
-				{
+				{   
+					if (edge->End->IsFinal)   //Èç¹û×´Ì¬Ò»¸ö±Õ°ü¿ÉÒÔµ½´ï×îÖÕ×´Ì¬
+						status->IsFinal = true;
 					uncomplete_status.push(edge->End);    //¼Óµ½¶ÓÁĞÖĞ ¼ÌĞø½øĞĞ±éÀú
 					closure_status.push_back(edge->End); //¼Óµ½±Õ°üÖĞ
 				}
 			}
 		} //ÒÑ»ñµÃµ±Ç°statusµÄËùÓĞE±Õ°ü
+
 		vector<Edge*> valid_edges; //ËùÓĞÓÉ±¾Éí¼°E±Õ°üÑÓÉì³öµÄ·ÇE±ß
 		for (auto edge:status->OutEdges)
 			if (!_isEedge(edge))
@@ -200,15 +205,16 @@ void NFA::E2NFA() //NFA×ª»¯ÎªDFA £¨ÕâÀïÊÇ½«E±ßÉ¾³ı£©
 				if (!_isEedge(edge))
 					valid_edges.push_back(edge);
 			}
-		}                              //ËùÓĞE±Õ°üÑÛÉñµÄ·ÇE±ß
+		}                             
 
 		for (auto edge : valid_edges)  //½«ÓĞĞ§±ß¸´ÖÆµ½ÓĞĞ§×´Ì¬ÉÏ
 		{
-			edges_add.push_back (make_edge(status, edge->MatchContent, edge->End, false)); //ĞèÒª¸´ÖÆµÄ±ß
+			edges_add.push_back (make_edge(status, edge->MatchContent, edge->End,false)); //ĞèÒª¸´ÖÆµÄ±ß //false²»¸Ä±ä±ßµÄÈÎºÎ±äÁ¿
 			E_edges.push_back(edge);
 		}
 
 	}
+
 	for_each(E_edges.begin(), E_edges.end(), [&](Edge* edge){set_edge_E(edge); }); //½«ËùÓĞ±»¸´ÖÆµÄ±ßÉèÖÃÎªE
 
 	eraseE(); //É¾³ıËùÓĞE±ßÒÔ¼°Ö»Í¨¹ıE±ßµ½´ïµÄ×´Ì¬
@@ -216,6 +222,7 @@ void NFA::E2NFA() //NFA×ª»¯ÎªDFA £¨ÕâÀïÊÇ½«E±ßÉ¾³ı£©
 	for_each(edges_add.begin(), edges_add.end(), [&](Edge* edge){add_edge(edge); }); //¼ÓÈëĞÂ´´½¨µÄ±ß
 
 	AllStatus.erase(remove_if(AllStatus.begin(), AllStatus.end(), [&](Status* s){return !_isValidStatus(s);}),AllStatus.end()); //É¾³ıËùÓĞÎŞĞ§×´Ì¬
+
 
 }
 bool NFA::_isValidStatus(Status* s)

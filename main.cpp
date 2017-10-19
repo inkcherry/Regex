@@ -11,14 +11,11 @@ using namespace std;
 
 int main()
 {
-	//Parser a("a|b"); //(ab.+)*|a*
-	/*Parser a("[0-9]+\\.");
-	NFA b(a.GenTree());
-	DFA c(b);
-	State_List d(c);*/
-	/*	d._test();*/
-	Re g("[0-9]*\\.");
-	cout << g.match_all("ffc192.168.21¡£13aasdf");
+	
+	Re m("[0-9][0-9]*(\\.|f)");
+	/*cout << g.match_all("se192.168.21.13re");*/
+	cout << m.match_all("se234.234.11.234fskj23");
+
 	cin.get();
 	
 	return 0;

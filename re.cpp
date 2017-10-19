@@ -37,7 +37,7 @@ string Re::match(const string& source)
 		curr_index = i_bak + result.size();
 		return result;
 	}
-	else //直到结尾都没有匹配到
+	else //直到结尾都没有匹配到 
 	{
 		curr_index = source.size();
 	}

@@ -69,11 +69,11 @@ Node* Parser::DealUnit()     //最低级A处理每个单元 主要处理括号的转义字符
 	return nullptr;
 }
 
-Node* Parser::DealBlock()        //次级分析机B级  处理特殊字符
+Node* Parser::DealBlock()        //  处理特殊字符
 {
-	Node* unit_node = DealUnit();   //给出一个分析curr状态的A级分析
+	Node* unit_node = DealUnit();   
 	GetChar();
-	if (curr == '+')              //读取字符  重复一个以上
+	if (curr == '+')              //可选
 	{
 		return new Repeat_Node(unit_node, Node::REPEAT_1);
 	}

@@ -30,7 +30,7 @@ public:
 	~Status();
 	vector<Edge*> InEdges;    //Æð±ß
 	vector<Edge*> OutEdges;      //ÖÕ±ß
-	bool IsFinal;
+	bool IsFinal=false;
 
 };
 
